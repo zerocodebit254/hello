@@ -1,0 +1,79 @@
+version: 2
+jobs:
+  build:
+    docker:
+      -image: circleci/python 3.6.1
+    
+    working_directory: ~/repo
+    
+    steps:
+      -checkout
+      
+      -restore_cache:
+         keys:
+           
+           -v1-depedencies-{{ checksum "requirements.txt" }}
+           
+           -v1-depedencies-
+           
+           
+      -run:
+         name:install depedencies
+         command: |
+           python3 -m venv venv
+           . venv/bin/activate
+           make install
+           
+      -save_cache:
+         paths:
+           - ./venv
+         key: v1-depedencies-{{ checksum "requirements.txt" }}
+         
+         
+      -run:
+         name:run lint
+         command: |
+         . venv/bin/activate
+         make lint
+        
+      
+      
+
+orbs:
+  python: circleci/python@0.2.1
+
+jobs:
+  build-and-test:
+    executor: python/default
+    steps:
+      - checkout
+      - python/load-cache
+      - python/install-deps
+      - python/save-cache
+      - run:
+          command: ./manage.py test
+          name: Test
+
+workflows:
+  main:
+    jobs:
+      - build-and-testversion: 2.1
+orbs:
+  python: circleci/python@0.2.1
+
+jobs:
+  build-and-test:
+    executor: python/default
+    steps:
+      - checkout
+      - python/load-cache
+      - python/install-deps
+      - python/save-cache
+      - run:
+          command: ./manage.py test
+          name: Test
+
+workflows:
+  main:
+    jobs:
+      - build-and-test
